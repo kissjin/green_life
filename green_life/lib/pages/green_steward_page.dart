@@ -27,88 +27,341 @@
 //   }
 // }
 import 'package:amap_map_fluttify/amap_map_fluttify.dart';
+import '../utils/misc.dart';
+import '../utils/next_latlng.dart';
 import 'package:decorated_flutter/decorated_flutter.dart';
 import 'package:demo_widgets/demo_widgets.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-//const beijing = LatLng(39.90960, 116.397228);
-//const shanghai = LatLng(31.22, 121.48);
-//const guangzhou = LatLng(23.16, 113.23);
 
-class CodeInteractionScreen extends StatefulWidget {
-  CodeInteractionScreen();
+final _networkIcon = Uri.parse(
+    'https://w3.hoopchina.com.cn/30/a7/6a/30a76aea75aef69e4ea0e7d3dee552c7001.jpg');
+final _assetsIcon1 = Uri.parse('images/test_icon.png');
+final _assetsIcon2 = Uri.parse('images/arrow.png');
 
-  factory CodeInteractionScreen.forDesignTime() => CodeInteractionScreen();
+class DrawPointScreen extends StatefulWidget {
+  DrawPointScreen();
 
   @override
-  _CodeInteractionScreenState createState() => _CodeInteractionScreenState();
+  DrawPointScreenState createState() => DrawPointScreenState();
 }
 
-class _CodeInteractionScreenState extends State<CodeInteractionScreen> {
+class DrawPointScreenState extends State<DrawPointScreen> with NextLatLng {
   AmapController _controller;
+  List<Marker> _markers = [];
+  Marker _hiddenMarker;
+  SmoothMoveMarker _moveMarker;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('调用方法交互')),
+      // appBar: AppBar(title: const Text('环保管家'),backgroundColor:Colors.,actions: <Widget>[
+      //   Text('data')
+      // ],),
       body: DecoratedColumn(
         children: <Widget>[
           Flexible(
             flex: 1,
-            child: AmapView(
-              onMapCreated: (controller) async {
-                _controller = controller;
-              },
+            child: Stack(
+              children: <Widget>[
+                AmapView(
+                  zoomLevel: 6,
+//                  markers: [
+//                    MarkerOption(
+//                      latLng: getNextLatLng(),
+////                  iconUri: _assetsIcon1,
+////                  imageConfig: createLocalImageConfiguration(context),
+//                    ),
+//                  ],
+                  onMapCreated: (controller) async {
+                    _controller = controller;
+                    if (await requestPermission()) {
+                      await controller.setZoomLevel(6);
+                    }
+                  },
+                ),
+                Container(
+                  height: 60,
+                  color: Colors.black12,
+                  child:  Padding(
+                        padding: EdgeInsets.only(left:16,right:16,top: 20),
+                 child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: <Widget>[
+                     
+                       Text('环保管家',style: TextStyle(fontSize: ScreenUtil().setSp(20),)),
+                      
+                      
+                      Icon(Icons.queue_play_next),
+                    ],
+                  )),
+                ),
+              ],
             ),
           ),
           Flexible(
             child: DecoratedColumn(
               scrollable: true,
-              divider: kDividerZero,
+              divider: kDividerTiny,
               children: <Widget>[
+                ListTile(
+                  title: Center(child: Text('添加Widget Marker')),
+                  onTap: () async {
+                    final marker = await _controller?.addMarker(
+                      MarkerOption(
+                        latLng: getNextLatLng(),
+                        widget: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Text('使用Widget作为Marker'),
+                            FlutterLogo(size: 80),
+                          ],
+                        ),
+                        imageConfig: createLocalImageConfiguration(context),
+                        title: '北京',
+                        snippet: '描述',
+                        width: 100,
+                        height: 100,
+                      ),
+                    );
+                    _markers.add(marker);
+                  },
+                ),
+                ListTile(
+                  title: Center(child: Text('添加Marker')),
+                  onTap: () async {
+                    final marker = await _controller?.addMarker(
+                      MarkerOption(
+                        latLng: getNextLatLng(),
+                        title: '北京',
+                        snippet: '描述',
+                        iconUri: _assetsIcon1,
+                        imageConfig: createLocalImageConfiguration(context),
+                        width: 48,
+                        height: 48,
+                        object: '自定义数据',
+                      ),
+                    );
+                    _markers.add(marker);
+                  },
+                ),
+                ListTile(
+                  title: Center(child: Text('移动Marker坐标')),
+                  onTap: () async {
+                    await _markers?.first?.setCoordinate(getNextLatLng());
+                  },
+                ),
+                ListTile(
+                  title: Center(child: Text('添加一个不显示的marker')),
+                  onTap: () async {
+                    await _hiddenMarker?.remove();
+                    _hiddenMarker = await _controller?.addMarker(
+                      MarkerOption(
+                        latLng: getNextLatLng(),
+                        title: '北京',
+                        snippet: '描述',
+                        iconUri: _assetsIcon1,
+                        imageConfig: createLocalImageConfiguration(context),
+                        visible: false,
+                      ),
+                    );
+                  },
+                ),
+                BooleanSetting(
+                  head: '是否显示隐藏的Marker',
+                  selected: false,
+                  onSelected: (visible) async {
+                    await _hiddenMarker?.setVisible(visible);
+                  },
+                ),
+                ListTile(
+                  title: Center(child: Text('调用方法开启弹窗')),
+                  onTap: () async {
+                    if (_markers.isNotEmpty) {
+                      final marker = _markers[0];
+                      marker.showInfoWindow();
+                    }
+                  },
+                ),
+                ListTile(
+                  title: Center(child: Text('调用方法关闭弹窗')),
+                  onTap: () async {
+                    if (_markers.isNotEmpty) {
+                      final marker = _markers[0];
+                      marker.hideInfoWindow();
+                    }
+                  },
+                ),
                 ContinuousSetting(
-                  head: '缩放大小',
-                  min: 0,
-                  max: 20,
-                  onChanged: (value) {
-                    _controller?.setZoomLevel(value);
+                  head: '添加旋转角度的Marker',
+                  onChanged: (value) async {
+                    await _controller?.clearMarkers(_markers);
+                    final marker = await _controller?.addMarker(
+                      MarkerOption(
+                        latLng: LatLng(39.90960, 116.397228),
+                        title: '北京',
+                        snippet: '描述',
+                        iconUri: _assetsIcon1,
+                        draggable: true,
+                        imageConfig: createLocalImageConfiguration(context),
+                        rotateAngle: 360 * value,
+                        anchorU: 0,
+                        anchorV: 0,
+                      ),
+                    );
+                    _markers.add(marker);
                   },
                 ),
-                DiscreteSetting(
-                  head: '放大/缩小一个等级',
-                  options: ['放大', '缩小'],
-                  onSelected: (value) {
-                    switch (value) {
-                      case '放大':
-                        _controller?.zoomIn();
-                        break;
-                      case '缩小':
-                        _controller?.zoomOut();
-                        break;
+                ListTile(
+                  title: Center(child: Text('批量添加Marker')),
+                  onTap: () {
+                    _controller?.addMarkers(
+                      [
+                        for (int i = 0; i < 100; i++)
+                          MarkerOption(
+                            latLng: getNextLatLng(),
+//                            title: '北京$i',
+//                            snippet: '描述$i',
+                            iconUri: i % 2 == 0 ? _assetsIcon1 : _assetsIcon2,
+                            imageConfig: createLocalImageConfiguration(context),
+                            width: 40,
+                            infoWindowEnabled: false,
+//                            rotateAngle: 90,
+                            height: 40,
+                            object: 'Marker_$i',
+                          ),
+                      ],
+                    )?.then(_markers.addAll);
+                  },
+                ),
+                ListTile(
+                  title: Center(child: Text('删除Marker')),
+                  onTap: () async {
+                    if (_markers.isNotEmpty) {
+                      await _markers[0].remove();
+                      _markers.removeAt(0);
                     }
                   },
                 ),
-                DiscreteSetting(
-                  head: '设置地图中心点',
-                  options: ['广州', '北京', '上海'],
-                  onSelected: (value) {
-                    switch (value) {
-                      case '广州':
-                        _controller?.setCenterCoordinate(
-                          LatLng(23.16, 113.23),
-                          animated: false,
+                ListTile(
+                  title: Center(child: Text('清除所有Marker')),
+                  onTap: () async {
+                    await _controller.clearMarkers(_markers);
+                  },
+                ),
+                ListTile(
+                  title: Center(child: Text('Marker添加点击事件')),
+                  onTap: () {
+                    _controller?.setMarkerClickedListener((marker) async {
+                      marker.setIcon(
+                          _assetsIcon2, createLocalImageConfiguration(context));
+                      return true;
+                    });
+                  },
+                ),
+                ListTile(
+                  title: Center(child: Text('Marker添加拖动事件')),
+                  onTap: () {
+                    _controller?.setMarkerDragListener(
+                      onMarkerDragEnd: (marker) async {
+                        toast(
+                          '${await marker.title}, ${await marker.location}',
                         );
-                        break;
-                      case '北京':
-                        _controller?.setCenterCoordinate(
-                          LatLng(39.90960, 116.397228),
-                          animated: true,
+                      },
+                    );
+                  },
+                ),
+                ListTile(
+                  title: Center(child: Text('将地图缩放至可以显示所有Marker')),
+                  onTap: () async {
+                    Stream.fromIterable(_markers)
+                        .asyncMap((marker) => marker.location)
+                        .toList()
+                        .then((boundary) {
+                      debugPrint('boundary: $boundary');
+                      return _controller?.zoomToSpan(
+                        boundary,
+                        padding: EdgeInsets.only(
+                          top: 100,
+                        ),
+                      );
+                    });
+                  },
+                ),
+                ListTile(
+                  title: Center(child: Text('监听Marker弹窗事件')),
+                  onTap: () async {
+                    await _controller
+                        ?.setInfoWindowClickListener((marker) async {
+                      toast('${await marker.title}, ${await marker.location}');
+                      return false;
+                    });
+                  },
+                ),
+                ListTile(
+                  title: Center(child: Text('画热力图')),
+                  onTap: () async {
+                    await _controller?.addHeatmapTile(
+                      HeatmapTileOption(latLngList: getNextBatchLatLng(50)),
+                    );
+                  },
+                ),
+                ListTile(
+                  title: Center(child: Text('添加平滑移动点')),
+                  onTap: () async {
+                    _moveMarker = await _controller?.addSmoothMoveMarker(
+                      SmoothMoveMarkerOption(
+                        path: [for (int i = 0; i < 10; i++) getNextLatLng()],
+                        iconUri: _assetsIcon1,
+                        imageConfig: createLocalImageConfiguration(context),
+                        duration: Duration(seconds: 10),
+                      ),
+                    );
+                    Future.delayed(
+                      Duration(seconds: 5),
+                      () => _moveMarker.stop(),
+                    );
+                  },
+                ),
+                ListTile(
+                  title: Center(child: Text('进入二级地图页面')),
+                  onTap: () async {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => DrawPointScreen()),
+                    );
+                  },
+                ),
+                ListTile(
+                  title: Center(child: Text('添加海量点')),
+                  onTap: () async {
+                    await _controller?.addMultiPointOverlay(
+                      MultiPointOption(
+                        pointList: [
+                          for (int i = 0; i < 10000; i++)
+                            PointOption(
+                              latLng: getNextLatLng(),
+                              id: i.toString(),
+                              title: 'Point$i',
+                              snippet: 'Snippet$i',
+                              object: 'Object$i',
+                            )
+                        ],
+                        iconUri: _assetsIcon1,
+                        imageConfiguration:
+                            createLocalImageConfiguration(context),
+                        size: Size(48, 48),
+                      ),
+                    );
+                    await _controller?.setMultiPointClickedListener(
+                      (id, title, snippet, object) async {
+                        toast(
+                          'id: $id, title: $title, snippet: $snippet, object: $object',
                         );
-                        break;
-                      case '上海':
-                        _controller?.setCenterCoordinate(LatLng(31.22, 121.48));
-                        break;
-                    }
+                      },
+                    );
                   },
                 ),
               ],
@@ -117,10 +370,5 @@ class _CodeInteractionScreenState extends State<CodeInteractionScreen> {
         ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 }
