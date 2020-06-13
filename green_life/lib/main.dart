@@ -47,11 +47,12 @@ void main() async{
         ChangeNotifierProvider(create: (context)=>CurrentIndexProvide()),],
         child: MyApp(),
         ));
-  await enableFluttifyLog(false);
   await AmapService.init(
     iosKey: '7a04506d15fdb7585707f7091d715ef4',
-    androidKey: '7c9daac55e90a439f7b4304b465297fa',
+    androidKey: 'f20a9e117260c8d4ec40c050e03de431',
   );
+  await enableFluttifyLog(false);
+
 
 }
 
@@ -65,6 +66,7 @@ class MyApp extends StatelessWidget {
     // ScreenUtil.init(context, width: 375, height: 662, allowFontScaling: true);
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         // This is the theme of your application.
         //

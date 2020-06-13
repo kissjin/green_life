@@ -29,7 +29,7 @@ class IndexPage extends StatelessWidget {
   ];
 
   final List<Widget> tabBodies = [
-    CodeInteractionScreen(),
+    DrawPointScreen(),
     RubbishSortPage(),
     RiverPatrolPage(),
   ];

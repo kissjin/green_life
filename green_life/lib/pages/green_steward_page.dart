@@ -27,6 +27,8 @@
 //   }
 // }
 import 'package:amap_map_fluttify/amap_map_fluttify.dart';
+import 'package:green_life/page_index.dart';
+import 'package:green_life/pages/components/company_page.dart';
 import '../utils/misc.dart';
 import '../utils/next_latlng.dart';
 import 'package:decorated_flutter/decorated_flutter.dart';
@@ -37,8 +39,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 final _networkIcon = Uri.parse(
     'https://w3.hoopchina.com.cn/30/a7/6a/30a76aea75aef69e4ea0e7d3dee552c7001.jpg');
-final _assetsIcon1 = Uri.parse('images/test_icon.png');
-final _assetsIcon2 = Uri.parse('images/arrow.png');
+final _assetsIcon1 = Uri.parse('https://w3.hoopchina.com.cn/30/a7/6a/30a76aea75aef69e4ea0e7d3dee552c7001.jpg');
+final _assetsIcon2 = Uri.parse('https://w3.hoopchina.com.cn/30/a7/6a/30a76aea75aef69e4ea0e7d3dee552c7001.jpg');
 
 class DrawPointScreen extends StatefulWidget {
   DrawPointScreen();
@@ -52,6 +54,12 @@ class DrawPointScreenState extends State<DrawPointScreen> with NextLatLng {
   List<Marker> _markers = [];
   Marker _hiddenMarker;
   SmoothMoveMarker _moveMarker;
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+  }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -70,8 +78,8 @@ class DrawPointScreenState extends State<DrawPointScreen> with NextLatLng {
 //                  markers: [
 //                    MarkerOption(
 //                      latLng: getNextLatLng(),
-////                  iconUri: _assetsIcon1,
-////                  imageConfig: createLocalImageConfiguration(context),
+//                  iconUri: _assetsIcon1,
+// //                  imageConfig: createLocalImageConfiguration(context),
 //                    ),
 //                  ],
                   onMapCreated: (controller) async {
@@ -79,7 +87,31 @@ class DrawPointScreenState extends State<DrawPointScreen> with NextLatLng {
                     if (await requestPermission()) {
                       await controller.setZoomLevel(6);
                     }
+                    _controller?.addMarkers(
+                      [
+                        for (int i = 0; i < 3; i++)
+                          MarkerOption(
+                            latLng: getNextLatLng(),
+                           title: '北京$i',
+//                            snippet: '描述$i',
+                            iconUri: i % 2 == 0 ? _assetsIcon1 : _assetsIcon2,
+                            imageConfig: createLocalImageConfiguration(context),
+                            width: 20,
+                            infoWindowEnabled: false,
+//                            rotateAngle: 90,
+                            height: 20,
+                            object: 'Marker_$i',
+                          ),
+                      ],
+                    )?.then(_markers.addAll);
                   },
+                  onMarkerClicked: (Marker marker) async{
+                    print(marker.title.then((value) => null));print('sss');
+                    marker.title.then((value) => print(value));
+                    pushNewPage(context, CompanyDatil());
+                    return true;
+                    },
+
                 ),
                 Container(
                   height: 60,
@@ -127,6 +159,7 @@ class DrawPointScreenState extends State<DrawPointScreen> with NextLatLng {
                       ),
                     );
                     _markers.add(marker);
+
                   },
                 ),
                 ListTile(
@@ -266,28 +299,11 @@ class DrawPointScreenState extends State<DrawPointScreen> with NextLatLng {
                   onTap: () {
                     _controller?.setMarkerDragListener(
                       onMarkerDragEnd: (marker) async {
-                        toast(
-                          '${await marker.title}, ${await marker.location}',
-                        );
+                        // toast(
+                        //   '${await marker.title}, ${await marker.location}',
+                        // );
                       },
                     );
-                  },
-                ),
-                ListTile(
-                  title: Center(child: Text('将地图缩放至可以显示所有Marker')),
-                  onTap: () async {
-                    Stream.fromIterable(_markers)
-                        .asyncMap((marker) => marker.location)
-                        .toList()
-                        .then((boundary) {
-                      debugPrint('boundary: $boundary');
-                      return _controller?.zoomToSpan(
-                        boundary,
-                        padding: EdgeInsets.only(
-                          top: 100,
-                        ),
-                      );
-                    });
                   },
                 ),
                 ListTile(
@@ -295,73 +311,9 @@ class DrawPointScreenState extends State<DrawPointScreen> with NextLatLng {
                   onTap: () async {
                     await _controller
                         ?.setInfoWindowClickListener((marker) async {
-                      toast('${await marker.title}, ${await marker.location}');
+                      // toast('${await marker.title}, ${await marker.location}');
                       return false;
                     });
-                  },
-                ),
-                ListTile(
-                  title: Center(child: Text('画热力图')),
-                  onTap: () async {
-                    await _controller?.addHeatmapTile(
-                      HeatmapTileOption(latLngList: getNextBatchLatLng(50)),
-                    );
-                  },
-                ),
-                ListTile(
-                  title: Center(child: Text('添加平滑移动点')),
-                  onTap: () async {
-                    _moveMarker = await _controller?.addSmoothMoveMarker(
-                      SmoothMoveMarkerOption(
-                        path: [for (int i = 0; i < 10; i++) getNextLatLng()],
-                        iconUri: _assetsIcon1,
-                        imageConfig: createLocalImageConfiguration(context),
-                        duration: Duration(seconds: 10),
-                      ),
-                    );
-                    Future.delayed(
-                      Duration(seconds: 5),
-                      () => _moveMarker.stop(),
-                    );
-                  },
-                ),
-                ListTile(
-                  title: Center(child: Text('进入二级地图页面')),
-                  onTap: () async {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => DrawPointScreen()),
-                    );
-                  },
-                ),
-                ListTile(
-                  title: Center(child: Text('添加海量点')),
-                  onTap: () async {
-                    await _controller?.addMultiPointOverlay(
-                      MultiPointOption(
-                        pointList: [
-                          for (int i = 0; i < 10000; i++)
-                            PointOption(
-                              latLng: getNextLatLng(),
-                              id: i.toString(),
-                              title: 'Point$i',
-                              snippet: 'Snippet$i',
-                              object: 'Object$i',
-                            )
-                        ],
-                        iconUri: _assetsIcon1,
-                        imageConfiguration:
-                            createLocalImageConfiguration(context),
-                        size: Size(48, 48),
-                      ),
-                    );
-                    await _controller?.setMultiPointClickedListener(
-                      (id, title, snippet, object) async {
-                        toast(
-                          'id: $id, title: $title, snippet: $snippet, object: $object',
-                        );
-                      },
-                    );
                   },
                 ),
               ],

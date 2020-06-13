@@ -14,10 +14,16 @@ export 'model/error_model.dart';
 export 'ui/light_theme.dart';
 export 'ui/global_ui.dart';
 export 'ui/input_view.dart';
+export 'ui/image_load_view.dart';
+export 'ui/dots_indicator.dart';
 
 export 'res/colors.dart';
 export 'res/dimens.dart';
 export 'res/styles.dart';
+
+
+export 'data/data.dart';
+
 
 
 

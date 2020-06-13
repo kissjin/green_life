@@ -35,4 +35,4 @@ const Color grey12Color = const Color(0xFFE4E4E4);
 
 const Color qdailyMajorColor = const Color(0xFFFFD003);
 const Color qdailyMinorColor = const Color(0xFFFFE48E);
-const Color themeColor = const Color(0xFF9A8047);
+const Color themeColor = const Color(0x9927C277);
