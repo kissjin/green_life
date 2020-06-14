@@ -15,7 +15,11 @@ export 'ui/light_theme.dart';
 export 'ui/global_ui.dart';
 export 'ui/input_view.dart';
 export 'ui/image_load_view.dart';
+export 'ui/image_load_view.dart';
+export 'ui/pie_chart/pie_chart.dart';
+export 'ui/pie_chart/pie_data.dart';
 export 'ui/dots_indicator.dart';
+export 'ui/triangle.dart';
 
 export 'res/colors.dart';
 export 'res/dimens.dart';

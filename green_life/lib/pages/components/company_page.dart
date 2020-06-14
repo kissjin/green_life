@@ -24,7 +24,7 @@ class _CompanyDatilState extends State<CompanyDatil> {
                SizedBox(height: 10),
               _companyDatil(),
               _swiper(),
-              _button()
+              _popPage()
             ],
           )),
     ));
@@ -36,12 +36,15 @@ class _CompanyDatilState extends State<CompanyDatil> {
         mainAxisAlignment:MainAxisAlignment.start ,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text('上海中得印务有限公司'),
-          Text('翔黄路198号智尚园区6-15'),
+          Text('上海中得印务有限公司',style: TextStyle(fontSize: 22, color: Colors.black),),
+          Gaps.vGap10,
+          Text('翔黄路198号智尚园区6-15',style: TextStyle(fontSize: 16, color: Colors.grey),),
+          Gaps.vGap10,
           Container(
             child: Row(
               children: <Widget>[
-                Text('环保管家'),
+                Text('环保管家',style: TextStyle(fontSize: 16, color: Colors.black),),
+          Gaps.hGap10,
                 Container(
                     alignment: Alignment.center,
                     width: ScreenUtil().setWidth(64),
@@ -112,12 +115,28 @@ class _CompanyDatilState extends State<CompanyDatil> {
       ),
     );
   }
-  Widget _button(){
-    return Container(
-      // decoration: Boxdoctorn,
-      child:Text("×") ,
-      );
+  Widget _popPage(){
+    return InkWell(
+      child: Container(
+        alignment:Alignment.center ,
+        child: InkWell(
+          // child:ClipOval(
+          child: Image.asset(
+            'assets/fonts/images/popPage.png',
+            width: ScreenUtil().setWidth(80),
+            height: ScreenUtil().setWidth(80),
+            fit: BoxFit.cover,
+          ),
+          //  ),
+           onTap:(){Navigator.pop(context);}
+           )));
   }
+  // Widget _button(){
+  //   return Container(
+  //     // decoration: Boxdoctorn,
+  //     child:Text("×") ,
+  //     );
+  // }
 }
 
 // class SwiperSample extends StatelessWidget {

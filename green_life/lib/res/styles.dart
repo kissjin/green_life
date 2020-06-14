@@ -156,6 +156,10 @@ class TextStyles {
     color: Colors.white,
     fontWeight: FontWeight.bold,
   );
+    static const TextStyle textBold16 = const TextStyle(
+    fontSize: Dimens.font_sp16,
+    fontWeight: FontWeight.bold
+  );
 
   //地址栏文字style
   static TextStyle addressStyle = TextStyle(color: Color.fromRGBO(51, 51, 51, 1),
